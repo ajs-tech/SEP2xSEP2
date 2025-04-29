@@ -1,0 +1,2 @@
+Reservation oprettet: Laptop [Dell XPS 15] tildelt til student [Alice]. >> 15:53:56 29-04-2025
+Reservation oprettet: Laptop [HP Pavilion] tildelt til student [Bob]. >> 15:53:56 29-04-2025
