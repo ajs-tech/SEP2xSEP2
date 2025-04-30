@@ -1,2 +1,40 @@
-Reservation oprettet: Laptop [Dell XPS 15] tildelt til student [Alice]. >> 15:53:56 29-04-2025
-Reservation oprettet: Laptop [HP Pavilion] tildelt til student [Bob]. >> 15:53:56 29-04-2025
+Laptop [ID: c370def2-b910-47a5-8ecd-3f2c0a69ca35, Lenovo Yoga 1] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:81411f8d-63a1-43ca-983c-11453ea1e8ed >> Laptop [Lenovo Yoga 1] tildelt til student [HighPerformance Student 1]. >> 10:45:22 30-04-2025
+Laptop [ID: 6fa6542d-d6fd-49f5-8d17-c4c2db13da70, Lenovo Yoga 2] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:b42dc3cf-4de8-41ee-a5cc-99055cbc15e5 >> Laptop [Lenovo Yoga 2] tildelt til student [HighPerformance Student 2]. >> 10:45:22 30-04-2025
+Laptop [ID: 9aa3b058-6f0c-46f7-a751-74255f192e9e, Lenovo Yoga 3] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:99f3e391-010e-4a6e-9b34-86a408ba68e4 >> Laptop [Lenovo Yoga 3] tildelt til student [HighPerformance Student 3]. >> 10:45:22 30-04-2025
+Laptop [ID: 9d9db456-0993-46ed-bc73-d4d065dcbb3c, Lenovo Yoga 4] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:baf7dcf9-62cf-4b08-ae31-44ba90d512b0 >> Laptop [Lenovo Yoga 4] tildelt til student [HighPerformance Student 4]. >> 10:45:22 30-04-2025
+Laptop [ID: 5f048418-dc58-46f4-b7ed-361abf187993, Lenovo Yoga 5] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:be45d607-04e3-4e63-95fe-b80bb67c230f >> Laptop [Lenovo Yoga 5] tildelt til student [HighPerformance Student 5]. >> 10:45:22 30-04-2025
+Laptop [ID: 0d31de43-1ed5-4227-acb1-a05a925af691, Lenovo IdeaPad 1] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:4711f882-14bc-42b5-b40f-3f6516a5b3cb >> Laptop [Lenovo IdeaPad 1] tildelt til student [LowPerformance Student 1]. >> 10:45:22 30-04-2025
+Laptop [ID: 58d69668-f523-4d72-8aa3-8ec0e4931007, Lenovo IdeaPad 2] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:92133372-7f9b-44f8-8efe-13405436dcf9 >> Laptop [Lenovo IdeaPad 2] tildelt til student [LowPerformance Student 2]. >> 10:45:22 30-04-2025
+Laptop [ID: 87616465-175f-4059-a6b3-b9a0f50137e0, Lenovo IdeaPad 3] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:6b426009-8b53-495a-8afc-3f2161221de2 >> Laptop [Lenovo IdeaPad 3] tildelt til student [LowPerformance Student 3]. >> 10:45:22 30-04-2025
+Laptop [ID: 399a85f0-f78e-4d9b-8db6-cfe8a980d3be, Lenovo IdeaPad 4] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:125a2349-028a-4a11-935c-a903d1d2bb73 >> Laptop [Lenovo IdeaPad 4] tildelt til student [LowPerformance Student 4]. >> 10:45:22 30-04-2025
+Laptop [ID: deabd928-be1e-42c1-b17c-c0fffd500a69, Lenovo IdeaPad 5] skiftet til LoanedState. >> 10:45:22 30-04-2025
+Reservation oprettet med id:d8a56963-3439-44f4-95f2-953863d1c848 >> Laptop [Lenovo IdeaPad 5] tildelt til student [LowPerformance Student 5]. >> 10:45:22 30-04-2025
+Laptop [ID: 9c57b821-d5ce-45cc-a3c0-d6bba0965267, Lenovo Yoga 1] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:36e47bf6-d4d1-4dd0-8308-026459ae782d >> Laptop [Lenovo Yoga 1] tildelt til student [HighPerformance Student 1]. >> 10:45:27 30-04-2025
+Laptop [ID: 5b246b21-cae8-4cb2-a4fd-a09a3258d888, Lenovo Yoga 2] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:1bd3e43f-33a0-4659-9463-f40ba2c28cfe >> Laptop [Lenovo Yoga 2] tildelt til student [HighPerformance Student 2]. >> 10:45:27 30-04-2025
+Laptop [ID: cb2dd209-c115-4d36-9711-f3969dba691a, Lenovo Yoga 3] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:9aa33e80-1319-4202-b04c-d503ab2ad3ec >> Laptop [Lenovo Yoga 3] tildelt til student [HighPerformance Student 3]. >> 10:45:27 30-04-2025
+Laptop [ID: 72b940f9-3011-4af5-8eab-e09f05e9c969, Lenovo Yoga 4] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:0edb2d0b-8515-4a5a-aaeb-24a8f0ef96f4 >> Laptop [Lenovo Yoga 4] tildelt til student [HighPerformance Student 4]. >> 10:45:27 30-04-2025
+Laptop [ID: 60b11ea4-05db-470f-9686-8387c769c516, Lenovo Yoga 5] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:c1bb5e60-8f3e-431f-b89b-215a72865e5b >> Laptop [Lenovo Yoga 5] tildelt til student [HighPerformance Student 5]. >> 10:45:27 30-04-2025
+Laptop [ID: 3fbdf3b9-070e-4b50-87f8-9fa67529ac64, Lenovo IdeaPad 1] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:e5784784-c42d-454c-bbad-7374bf912013 >> Laptop [Lenovo IdeaPad 1] tildelt til student [LowPerformance Student 1]. >> 10:45:27 30-04-2025
+Laptop [ID: d397ed7c-1fdb-424a-9a4c-816d3751efd6, Lenovo IdeaPad 2] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:4886d77b-06f2-4cd0-8b09-2a28dc64e243 >> Laptop [Lenovo IdeaPad 2] tildelt til student [LowPerformance Student 2]. >> 10:45:27 30-04-2025
+Laptop [ID: 19cf5e7f-5b45-437f-b8e6-6e8b815d5d63, Lenovo IdeaPad 3] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:6e04e5e6-4608-48d0-8f82-c1e1cb60bd2c >> Laptop [Lenovo IdeaPad 3] tildelt til student [LowPerformance Student 3]. >> 10:45:27 30-04-2025
+Laptop [ID: d18daf76-d364-4548-bb95-17eb34fc68e2, Lenovo IdeaPad 4] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:3c1ea99c-93c3-4a3f-84aa-d23f95d1452c >> Laptop [Lenovo IdeaPad 4] tildelt til student [LowPerformance Student 4]. >> 10:45:27 30-04-2025
+Laptop [ID: 77ad1519-8a98-4dbc-a9f4-e068bbfab48a, Lenovo IdeaPad 5] skiftet til LoanedState. >> 10:45:27 30-04-2025
+Reservation oprettet med id:d655a99e-5f5c-4272-b7f5-9365f8691adb >> Laptop [Lenovo IdeaPad 5] tildelt til student [LowPerformance Student 5]. >> 10:45:27 30-04-2025

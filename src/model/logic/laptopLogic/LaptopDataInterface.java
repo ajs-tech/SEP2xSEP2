@@ -1,6 +1,7 @@
 package model.logic.laptopLogic;
 
 import model.enums.PerformanceTypeEnum;
+import model.logic.reservationsLogic.ReservationManager;
 import model.models.Laptop;
 
 import java.util.ArrayList;
@@ -19,6 +20,6 @@ public interface LaptopDataInterface {
 
     Laptop findAvailableLaptop(PerformanceTypeEnum performanceTypeEnum);
 
-    Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum);
+    Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum, ReservationManager manager);
 
 }

@@ -1,12 +1,14 @@
 package model.logic;
 
 import model.enums.PerformanceTypeEnum;
+import model.log.Log;
 import model.logic.laptopLogic.LaptopData;
 import model.logic.laptopLogic.LaptopDataInterface;
 import model.logic.reservationsLogic.ReservationManager;
 import model.logic.studentLogic.StudentData;
 import model.logic.studentLogic.StudentDataInterface;
 import model.models.Laptop;
+import model.models.Reservation;
 import model.models.Student;
 
 import java.util.ArrayList;
@@ -24,6 +26,10 @@ public class DataManager implements LaptopDataInterface, StudentDataInterface {
     }
 
     // Laptop getters og setters
+
+    public LaptopData getLaptopDataObject(){
+        return laptopData;
+    }
 
     @Override
     public ArrayList<Laptop> getAllLaptops() {
@@ -51,13 +57,19 @@ public class DataManager implements LaptopDataInterface, StudentDataInterface {
     }
 
     @Override
-    public Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum) {
-        return laptopData.createLaptop(performanceTypeEnum);
+    public Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum, ReservationManager manager) {
+        System.out.println("createLaptop() kaldt med performanceType: " + performanceTypeEnum);
+        Laptop laptopCreatedNow = laptopData.createLaptop(performanceTypeEnum, manager);
+        return laptopCreatedNow;
     }
 
 
 
     // Students getters og setters
+
+    public StudentData getStudentDataObject(){
+        return studentData;
+    }
 
     @Override
     public ArrayList<Student> getAllStudents() {
@@ -123,6 +135,12 @@ public class DataManager implements LaptopDataInterface, StudentDataInterface {
         }
         return studentCreated;
 
+    }
+
+    // ReservationsManager getters og setters
+
+    public ReservationManager getReservationManagerObject(){
+        return reservationManager;
     }
 
 
