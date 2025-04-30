@@ -9,13 +9,14 @@ import model.models.Laptop;
 import model.models.Student;
 import model.models.Reservation;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DAOTestRunner {
+  private static final Logger logger = Logger.getLogger(DAOTestRunner.class.getName());
 
   public static void main(String[] args) {
     System.out.println("--- Starting DAO Manual Test Runner ---");
@@ -23,9 +24,10 @@ public class DAOTestRunner {
     LaptopDAO laptopDAO = new LaptopDAO();
     StudentDAO studentDAO = new StudentDAO();
     ReservationDAO reservationDAO = new ReservationDAO();
+    QueueDAO queueDAO = new QueueDAO(); // Tilføjet QueueDAO for test
 
     // --- Test Data ---
-    // NOTE: Laptop constructor creates a random UUID
+    // Brug den nye konstruktør med UUID.randomUUID() i stedet for new UUID(6, 6)
     Laptop testLaptop = new Laptop("ManualTest", "DAO-Check", 256, 8, PerformanceTypeEnum.LOW);
     UUID laptopId = testLaptop.getId();
     System.out.println("Generated Test Laptop UUID: " + laptopId);
@@ -48,27 +50,26 @@ public class DAOTestRunner {
     // --- Clean Before Test (Optional but recommended) ---
     System.out.println(" --- Attempting Pre-Test Cleanup ---");
     try {
-      // Vi henter først eventuelle reservationer der peger på vores test-elementer
-      ReservationDAO tempReservationDAO = new ReservationDAO();
-      // Du kan evt. implementere en metode i ReservationDAO til at hente reservationer efter laptop_id
-      // I mellemtiden kan vi slette alle reservationer der måtte være tilknyttet test-laptop (ikke optimalt, men virker)
-      try {
-        Connection conn = DatabaseConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement("DELETE FROM Reservation WHERE laptop_uuid = ? OR student_via_id = ?");
-        stmt.setString(1, laptopId.toString());
-        stmt.setInt(2, studentViaId);
-        stmt.executeUpdate();
-        stmt.close();
-        conn.close();
-      } catch (Exception e) {
-        System.out.println("Cleanup reservation error: " + e.getMessage());
+      if (reservationId != null) {
+        reservationDAO.delete(reservationId);
       }
-
-      // Derefter kan vi slette laptop og student
-      try { laptopDAO.delete(laptopId); } catch (Exception e) { System.out.println("Cleanup laptop error: " + e.getMessage()); }
-      try { studentDAO.delete(studentViaId); } catch (Exception e) { System.out.println("Cleanup student error: " + e.getMessage()); }
     } catch (Exception e) {
-      System.out.println("General cleanup error: " + e.getMessage());
+      System.out.println("No reservation to clean up: " + e.getMessage());
+    }
+    try {
+      laptopDAO.delete(laptopId);
+    } catch (Exception e) {
+      System.out.println("No laptop to clean up: " + e.getMessage());
+    }
+    try {
+      studentDAO.delete(studentViaId);
+    } catch (Exception e) {
+      System.out.println("No student to clean up: " + e.getMessage());
+    }
+    try {
+      queueDAO.removeFromQueue(studentViaId, PerformanceTypeEnum.LOW);
+    } catch (Exception e) {
+      System.out.println("No queue entry to clean up: " + e.getMessage());
     }
     System.out.println("Cleanup attempted.");
 
@@ -83,7 +84,9 @@ public class DAOTestRunner {
         System.out.println("Getting Laptop by ID: " + laptopId);
         Laptop retrieved = laptopDAO.getById(laptopId);
         if (retrieved != null) {
-          System.out.println("Retrieved Laptop: " + retrieved.getBrand() + " " + retrieved.getModel() + " (DB UUID might differ: " + retrieved.getId() + ")");
+          System.out.println("Retrieved Laptop: " + retrieved.getBrand() + " " + retrieved.getModel() +
+                  " (UUID: " + retrieved.getId() + ")");
+          System.out.println("State: " + retrieved.getStateClassName());
 
           System.out.println("Updating Laptop...");
           retrieved.setModel("DAO-Check-Updated"); // Update the retrieved object
@@ -147,13 +150,52 @@ public class DAOTestRunner {
       e.printStackTrace();
     }
 
+    // --- QueueDAO Test ---
+    System.out.println(" --- Testing QueueDAO ---");
+    try {
+      System.out.println("Adding Student to Queue...");
+      boolean addedToQueue = queueDAO.addToQueue(testStudent, PerformanceTypeEnum.LOW);
+      System.out.println("Student Added to Queue: " + addedToQueue);
+
+      if (addedToQueue) {
+        System.out.println("Getting Queue Size...");
+        int queueSize = queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
+        System.out.println("Low Performance Queue Size: " + queueSize);
+
+        System.out.println("Getting Students in Queue...");
+        java.util.List<Student> studentsInQueue = queueDAO.getStudentsInQueue(PerformanceTypeEnum.LOW);
+        System.out.println("Students in Queue: " + studentsInQueue.size());
+
+        if (!studentsInQueue.isEmpty()) {
+          System.out.println("First Student in Queue: " + studentsInQueue.get(0).getName());
+
+          System.out.println("Getting and Removing Next Student in Queue...");
+          Student nextStudent = queueDAO.getAndRemoveNextInQueue(PerformanceTypeEnum.LOW);
+          if (nextStudent != null) {
+            System.out.println("Next Student in Queue: " + nextStudent.getName());
+
+            System.out.println("Checking Queue Size After Remove...");
+            queueSize = queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
+            System.out.println("Low Performance Queue Size After Remove: " + queueSize);
+          } else {
+            System.out.println("Failed to get next student in queue.");
+          }
+        }
+      } else {
+        System.out.println("Skipping further queue tests due to insertion failure.");
+      }
+    } catch (SQLException e) {
+      System.err.println("QueueDAO Error: " + e.getMessage());
+      e.printStackTrace();
+    }
+
     // --- ReservationDAO Test ---
     System.out.println(" --- Testing ReservationDAO ---");
-            // Retrieve fresh student/laptop objects as they might have changed
-            Laptop currentLaptop = null;
+    // Retrieve fresh student/laptop objects as they might have changed
+    Laptop currentLaptop = null;
     Student currentStudent = null;
     try {
-      currentLaptop = laptopDAO.getById(laptopId); // Use original ID 
+      currentLaptop = laptopDAO.getById(laptopId); // Use original ID
       currentStudent = studentDAO.getById(studentViaId);
     } catch (SQLException e) {
       System.err.println("Failed to retrieve student/laptop for reservation test: " + e.getMessage());
@@ -162,7 +204,7 @@ public class DAOTestRunner {
     if (currentLaptop != null && currentStudent != null) {
       System.out.println("Laptop and Student retrieved for reservation test.");
       try {
-        // NOTE: Reservation constructor creates a random UUID
+        // Brug den nye konstruktør
         testReservation = new Reservation(currentStudent, currentLaptop);
         reservationId = testReservation.getReservationId();
         System.out.println("Generated Test Reservation UUID: " + reservationId);
@@ -181,22 +223,17 @@ public class DAOTestRunner {
             System.out.println("  -> Student: " + retrieved.getStudent().getName());
 
             System.out.println("Updating Reservation Status...");
-            // Use reflection to get the DB object's actual UUID
-            UUID dbReservationId = retrieved.getReservationId();
             retrieved.changeStatus(ReservationStatusEnum.COMPLETED);
             boolean updated = reservationDAO.update(retrieved);
             System.out.println("Reservation Updated: " + updated);
 
-            System.out.println("Getting Updated Reservation by ID: " + dbReservationId);
-            Reservation retrievedUpdated = reservationDAO.getById(dbReservationId);
+            System.out.println("Getting Updated Reservation by ID: " + reservationId);
+            Reservation retrievedUpdated = reservationDAO.getById(reservationId);
             if (retrievedUpdated != null) {
               System.out.println("Retrieved Updated Reservation Status: " + retrievedUpdated.getStatus());
             } else {
               System.out.println("Failed to retrieve updated reservation.");
             }
-
-            // Use the DB ID for deletion
-            reservationId = dbReservationId;
           } else {
             System.out.println("Failed to retrieve reservation after insert.");
             reservationId = null; // Can't delete if not retrieved
@@ -214,6 +251,55 @@ public class DAOTestRunner {
       System.out.println("Skipping Reservation tests: Could not retrieve prerequisite Laptop or Student.");
     }
 
+    // --- Testing Transaction-based Methods ---
+    System.out.println(" --- Testing Transaction-based Methods ---");
+    try {
+      // Først, nulstil laptop og student status
+      if (currentLaptop != null) {
+        currentLaptop.setStateFromDatabase("AvailableState");
+        laptopDAO.updateState(currentLaptop);
+      }
+      if (currentStudent != null && currentStudent.isHasLaptop()) {
+        currentStudent.setHasLaptopToOpposite();
+        studentDAO.update(currentStudent);
+      }
+
+      // Opret en ny reservation med transaktionssupport
+      if (currentLaptop != null && currentStudent != null) {
+        System.out.println("Creating Reservation with Transaction...");
+        Reservation transactionReservation = new Reservation(currentStudent, currentLaptop);
+        boolean created = reservationDAO.createReservationWithTransaction(transactionReservation);
+        System.out.println("Reservation Created with Transaction: " + created);
+
+        // Tjek om laptop og student status blev opdateret korrekt
+        if (created) {
+          Laptop updatedLaptop = laptopDAO.getById(currentLaptop.getId());
+          Student updatedStudent = studentDAO.getById(currentStudent.getViaId());
+
+          System.out.println("Laptop State After Transaction: " + updatedLaptop.getStateClassName());
+          System.out.println("Student Has Laptop After Transaction: " + updatedStudent.isHasLaptop());
+
+          // Opdater reservation status med transaktionssupport
+          System.out.println("Updating Reservation Status with Transaction...");
+          transactionReservation.changeStatus(ReservationStatusEnum.COMPLETED);
+          boolean updated = reservationDAO.updateStatusWithTransaction(transactionReservation);
+          System.out.println("Reservation Updated with Transaction: " + updated);
+
+          // Tjek om laptop og student status blev opdateret korrekt efter afslutning
+          if (updated) {
+            updatedLaptop = laptopDAO.getById(currentLaptop.getId());
+            updatedStudent = studentDAO.getById(currentStudent.getViaId());
+
+            System.out.println("Laptop State After Completion: " + updatedLaptop.getStateClassName());
+            System.out.println("Student Has Laptop After Completion: " + updatedStudent.isHasLaptop());
+          }
+        }
+      }
+    } catch (SQLException e) {
+      System.err.println("Transaction Test Error: " + e.getMessage());
+      e.printStackTrace();
+    }
+
     // --- Final Cleanup ---
     System.out.println("--- Attempting Post-Test Cleanup ---");
     try {
@@ -225,6 +311,22 @@ public class DAOTestRunner {
     } catch (SQLException e) {
       System.err.println("Cleanup Reservation Error: " + e.getMessage());
     }
+
+    try {
+      // Ryd op i alle reservationer for laptopen (inkl. dem fra transaktionstest)
+      if (laptopId != null) {
+        System.out.println("Cleaning up all reservations for laptop...");
+        try (java.sql.Connection conn = DatabaseConnection.getConnection();
+             java.sql.PreparedStatement stmt = conn.prepareStatement("DELETE FROM Reservation WHERE laptop_uuid = ?")) {
+          stmt.setString(1, laptopId.toString());
+          int count = stmt.executeUpdate();
+          System.out.println("Cleaned up " + count + " reservations");
+        }
+      }
+    } catch (SQLException e) {
+      System.err.println("Cleanup Extra Reservations Error: " + e.getMessage());
+    }
+
     try {
       System.out.println("Deleting Laptop: " + laptopId);
       boolean deleted = laptopDAO.delete(laptopId);
@@ -232,12 +334,21 @@ public class DAOTestRunner {
     } catch (SQLException e) {
       System.err.println("Cleanup Laptop Error: " + e.getMessage());
     }
+
     try {
       System.out.println("Deleting Student: " + studentViaId);
       boolean deleted = studentDAO.delete(studentViaId);
       System.out.println("Student Deleted: " + deleted);
     } catch (SQLException e) {
       System.err.println("Cleanup Student Error: " + e.getMessage());
+    }
+
+    try {
+      System.out.println("Cleaning up any queue entries...");
+      queueDAO.removeFromQueue(studentViaId, PerformanceTypeEnum.LOW);
+      queueDAO.removeFromQueue(studentViaId, PerformanceTypeEnum.HIGH);
+    } catch (SQLException e) {
+      System.err.println("Cleanup Queue Error: " + e.getMessage());
     }
 
     System.out.println("DAO Manual Test Runner Finished");
