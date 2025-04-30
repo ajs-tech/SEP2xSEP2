@@ -67,7 +67,6 @@ public class Log {
     private void addToFile(LogLine logLine){
         try(PrintWriter out = new PrintWriter(new FileWriter(path, true))) {
             out.println(logLine.toString());
-            out.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
