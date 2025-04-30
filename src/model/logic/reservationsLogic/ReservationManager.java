@@ -34,7 +34,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public int getAmountOfActiveReservations(){
         int count = 0;
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.Active)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.ACTIVE)){
                 count++;
             }
         }
@@ -44,7 +44,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public int getAmountOfCancelledReservations(){
         int count = 0;
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.cancelled)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.CANCELLED)){
                 count++;
             }
         }
@@ -54,7 +54,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public int getAmountOfCompletedReservations(){
         int count = 0;
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.completed)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.COMPLETED)){
                 count++;
             }
         }
@@ -68,7 +68,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public ArrayList<Reservation> getAllActiveReservations(){
         ArrayList<Reservation> allActive = new ArrayList<>();
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.Active)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.ACTIVE)){
                 allActive.add(reservation);
             }
         }

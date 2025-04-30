@@ -14,7 +14,7 @@ public class Reservation {
         this.reservationID = UUID.randomUUID();
         this.student = student;
         this.laptop = laptop;
-        status = ReservationStatusEnum.Active;
+        status = ReservationStatusEnum.ACTIVE;  // Bemærk 'ACTIVE' i stedet for 'Active'
     }
 
     // Getters
