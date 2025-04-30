@@ -44,7 +44,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public int getAmountOfCancelledReservations(){
         int count = 0;
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.cancelled)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.Cancelled)){
                 count++;
             }
         }
@@ -54,7 +54,7 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
     public int getAmountOfCompletedReservations(){
         int count = 0;
         for (Reservation reservation : reservationList){
-            if (reservation.getStatus().equals(ReservationStatusEnum.completed)){
+            if (reservation.getStatus().equals(ReservationStatusEnum.Completed)){
                 count++;
             }
         }
@@ -77,18 +77,22 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
 
     public void createReservation(Laptop laptop, Student student){
         Reservation reservationCreated = reservationFactory.createReservation(laptop, student);
-
-
+        reservationList.add(reservationCreated);
     }
 
     public void removeReservation(UUID id){
+        Reservation reservationForRemoval = null;
         for (Reservation reservation : reservationList){
             if (reservation.getReservationId().equals(id)){
+                reservationForRemoval = reservation;
                 reservationList.remove(reservation);
+                Log.getInstance().addToLog("Reservation fjernet: ID [" + reservation.getReservationId() + "].");
                 return;
             }
         }
         System.out.println("Kan ikke finde reservationen! >> removeReservation(UUID id):)");
+        // Log handlingen
+        model.log.Log.getInstance().addToLog("Reservation fjernet: ID [" + reservationForRemoval.getReservationId() + "].");
     }
 
 
@@ -168,17 +172,15 @@ public class ReservationManager implements QueueForLowPowerLaptopsInterface, Que
             } else if (PerformanceTypeEnum.HIGH.equals(laptop.getPerformanceType())) {
                 nextStudent = highPerformanceQueue.getAndRemoveNextInLineForHighPerformance();
             }
-            Reservation reservation = new Reservation(nextStudent, laptop);
-            reservationList.add(reservation);
-            nextStudent.setHasLaptopToOpposite();
 
-            // Log handlingen
-            Log.getInstance().addToLog("Reservation oprettet: Laptop [" + laptop.getBrand() + " " + laptop.getModel() + "] tildelt til student [" + nextStudent.getName() + "].");
-        } else Log.getInstance().addToLog("Kan ikke oprette en reservation da if statement i propertyChange fra " + getClass().getSimpleName() + " ikke er gået i gennem!");
-
-
-
-
-
+            if (nextStudent != null){
+                createReservation(laptop, nextStudent);
+                Log.getInstance().addToLog("Automatisk reservation oprettet fra køen for student [" + nextStudent.getName() + "]");
+            } else {
+                Log.getInstance().addToLog("Ingen studerende i kø for laptop [" + laptop.getBrand() + " " + laptop.getModel() + "].");
+            }
+        } else {
+            Log.getInstance().addToLog("Kan ikke oprette en ny automatisk reservation for den fornyligt ledig laptop da if statement i propertyChange fra " + getClass().getSimpleName() + " ikke er gået i gennem!");
+        }
     }
 }

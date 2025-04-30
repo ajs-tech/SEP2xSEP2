@@ -1,6 +1,8 @@
 package model.models;
 
 import model.enums.PerformanceTypeEnum;
+import model.log.Log;
+import model.logic.reservationsLogic.ReservationManager;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -17,7 +19,7 @@ public class Laptop implements UnnamedPropertyChangeSubject {
     private LaptopState theState;
     private final PropertyChangeSupport support;
 
-    public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType){
+    public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType, ReservationManager reservationManager){
         this.brand = brand;
         this.model = model;
         this.gigabyte = gigabyte;
@@ -25,8 +27,9 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         this.performanceType = performanceType;
         // loanedBy = null;
         theState = new AvailableState();
-        id = new UUID(6, 6);
+        id = UUID.randomUUID();
         support = new PropertyChangeSupport(this);
+        this.addListener(reservationManager);
     }
 
     // Getters og setters er her
@@ -67,6 +70,10 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         this.ram = ram;
     }
 
+    public String toString(){
+        return "Laptop id: " + id + " with the following specs: " + performanceType + " " +brand + " " + model + " " + gigabyte + " " + ram;
+    }
+
 
     /*public Student getLoanedBy() {
         return loanedBy;
@@ -101,7 +108,9 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         theState = newState;
         if (newState instanceof AvailableState){
             support.firePropertyChange("toAvailableState", oldState , theState);
-        }
+            Log.getInstance().addToLog("Laptop [ID: " + id + ", " + brand + " " + model + "] skiftet til " + newState.getClass().getSimpleName() + ".");
+        } else if (newState instanceof LoanedState) {
+            Log.getInstance().addToLog("Laptop [ID: " + id + ", " + brand + " " + model + "] skiftet til " + newState.getClass().getSimpleName() + ".");        }
     }
 
 

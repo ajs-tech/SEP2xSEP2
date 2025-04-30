@@ -1,6 +1,7 @@
 package model.logic.laptopLogic;
 
 import model.enums.PerformanceTypeEnum;
+import model.logic.reservationsLogic.ReservationManager;
 import model.models.Laptop;
 
 import java.util.ArrayList;
@@ -63,10 +64,13 @@ public class LaptopData implements LaptopDataInterface {
     }
 
     @Override
-    public Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum){
-        Laptop laptop = new Laptop("Apple", "M3 Pro", 520, 18, performanceTypeEnum);
+    public Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum, ReservationManager manager){
+        Laptop laptop = new Laptop("Apple", "M3 Pro", 520, 18, performanceTypeEnum, manager);
+        allLaptops.add(laptop);
         return laptop;
     }
+
+
 
 
 }

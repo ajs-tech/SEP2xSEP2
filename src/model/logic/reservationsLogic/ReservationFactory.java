@@ -19,7 +19,7 @@ public class ReservationFactory {
         laptop.changeState(new LoanedState());
         student.setHasLaptopToOpposite();
         Reservation reservation = new Reservation(student, laptop);
-        log.addToLog("Reservation oprettet. ID er: " + reservation.getReservationId());
+        Log.getInstance().addToLog("Reservation oprettet med id:" + reservation.getReservationId() + " >> Laptop [" + laptop.getBrand() + " " + laptop.getModel() + "] tildelt til student [" + student.getName() + "].");
         return reservation;
     }
 
