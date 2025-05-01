@@ -1,5 +1,6 @@
 package model.database;
 
+import model.enums.PerformanceTypeEnum;
 import model.models.Laptop;
 import model.models.Student;
 import model.models.Reservation;
@@ -306,9 +307,10 @@ public class ReservationDAO {
         Timestamp creationTimestamp = rs.getTimestamp("creation_date");
         Date creationDate = creationTimestamp != null ? new Date(creationTimestamp.getTime()) : new Date();
 
-        // Hent tilknyttet Laptop og Student ved hjælp af deres DAOs
-        Laptop laptop = laptopDAO.getById(laptopUUID);
-        Student student = studentDAO.getById(studentViaId);
+        // Opret simple objekter uden at rekursivt indlæse fra databasen:
+        Laptop laptop = new Laptop(laptopUUID, "Loaded later", "Loaded later", 0, 0, PerformanceTypeEnum.LOW);
+        Student student = new Student("Loaded later", new Date(), "Unknown", studentViaId, "unknown@email.com", 0, PerformanceTypeEnum.LOW);
+
 
         // Tjek om Laptop og Student blev fundet
         if (laptop == null) {

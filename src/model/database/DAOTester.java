@@ -19,7 +19,7 @@ public class DAOTester {
   private static StudentDAO studentDAO = new StudentDAO();
   private static ReservationDAO reservationDAO = new ReservationDAO();
   private static QueueDAO queueDAO = new QueueDAO(); // Tilføjet QueueDAO
-  private static ReservationManager reservationManager = new ReservationManager();
+  private static ReservationManager reservationManager = null;
 
   public static void main(String[] args) {
     boolean running = true;
@@ -136,6 +136,12 @@ public class DAOTester {
       }
       System.out.println("Total: " + laptops.size() + " laptops");
     }
+  }
+  private static ReservationManager getReservationManager() {
+    if (reservationManager == null) {
+      reservationManager = new ReservationManager();
+    }
+    return reservationManager;
   }
 
   // Metode 2: Vis alle studerende

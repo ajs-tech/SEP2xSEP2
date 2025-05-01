@@ -176,6 +176,7 @@ public class LaptopDAO {
      * Forbedret metode til at konvertere ResultSet til Laptop objekt
      * Bruger UUID fra databasen i stedet for at generere et nyt
      */
+    // I LaptopDAO.java, ændr mapResultSetToLaptop metoden hvis den indeholder ReservationManager referencer:
     private Laptop mapResultSetToLaptop(ResultSet rs) throws SQLException {
         UUID laptopId = UUID.fromString(rs.getString("laptop_uuid"));
         String brand = rs.getString("brand");
@@ -183,10 +184,9 @@ public class LaptopDAO {
         int gigabyte = rs.getInt("gigabyte");
         int ram = rs.getInt("ram");
         PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance_type"));
-        ReservationManager manager = new ReservationManager();
 
-        // Brug konstruktøren der accepterer et UUID for at undgå at generere nyt
-        Laptop laptop = new Laptop(laptopId, brand, model, gigabyte, ram, performanceType, manager);
+        // Fjern eventuelle kald der involverer ReservationManager her
+        Laptop laptop = new Laptop(laptopId, brand, model, gigabyte, ram, performanceType);
 
         // Sæt tilstanden baseret på databaseværdien
         String stateName = rs.getString("state");

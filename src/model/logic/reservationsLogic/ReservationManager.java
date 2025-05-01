@@ -34,25 +34,29 @@ public class ReservationManager implements PropertyChangeListener {
     private final StudentDAO studentDAO;
     private final Log log;
 
+    // I ReservationManager.java, ændr konstruktøren:
     public ReservationManager() {
-        reservationList = new ArrayList<>();
-        lowPerformanceQueue = new QueueForLowPowerLaptops();
-        highPerformanceQueue = new QueueForHighPowerLaptops();
-        reservationFactory = new ReservationFactory();
-        queueDAO = new QueueDAO();
-        reservationDAO = new ReservationDAO();
-        laptopDAO = new LaptopDAO();
-        studentDAO = new StudentDAO();
-        log = Log.getInstance();
-
-        // Indlæs reservationer fra databasen ved opstart
         try {
-            loadReservationsFromDatabase();
-            // Indlæs køer fra databasen
-            loadQueuesFromDatabase();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Fejl ved indlæsning fra database ved opstart: " + e.getMessage(), e);
-            log.addToLog("Fejl ved indlæsning fra database: " + e.getMessage());
+            reservationList = new ArrayList<>();
+            lowPerformanceQueue = new QueueForLowPowerLaptops();
+            highPerformanceQueue = new QueueForHighPowerLaptops();
+            reservationFactory = new ReservationFactory();
+            queueDAO = new QueueDAO();
+            reservationDAO = new ReservationDAO();
+            laptopDAO = new LaptopDAO();
+            studentDAO = new StudentDAO();
+            log = Log.getInstance();
+
+            // Omslut med try-catch for at undgå krasn ved startup
+            try {
+                loadReservationsFromDatabase();
+                loadQueuesFromDatabase();
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Fejl ved indlæsning fra database: " + e.getMessage(), e);
+                log.addToLog("Fejl ved indlæsning fra database: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Kritisk fejl ved initialisering af ReservationManager: " + e.getMessage(), e);
         }
     }
 
@@ -60,14 +64,21 @@ public class ReservationManager implements PropertyChangeListener {
      * Indlæs aktive reservationer fra databasen ved opstart
      */
     private void loadReservationsFromDatabase() throws SQLException {
-        List<Reservation> dbReservations = reservationDAO.getAllReservations();
-        for (Reservation reservation : dbReservations) {
-            if (reservation.getStatus() == ReservationStatusEnum.ACTIVE) {
-                reservationList.add(reservation);
+        try {
+            List<Reservation> dbReservations = reservationDAO.getAllReservations();
+            for (Reservation reservation : dbReservations) {
+                if (reservation.getStatus() == ReservationStatusEnum.ACTIVE) {
+                    reservationList.add(reservation);
+                }
             }
+            logger.info("Indlæst " + reservationList.size() + " aktive reservationer fra databasen");
+            log.addToLog("Indlæst " + reservationList.size() + " aktive reservationer fra databasen");
+        } catch (SQLException e) {
+            logger.log(Level.WARNING, "Fejl ved indlæsning af reservationer: " + e.getMessage());
+            log.addToLog("Fejl ved indlæsning af reservationer: " + e.getMessage());
+            // Rethrow så den overordnede try-catch kan håndtere det
+            throw e;
         }
-        logger.info("Indlæst " + reservationList.size() + " aktive reservationer fra databasen");
-        log.addToLog("Indlæst " + reservationList.size() + " aktive reservationer fra databasen");
     }
 
     /**

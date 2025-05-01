@@ -20,28 +20,31 @@ public class Laptop implements UnnamedPropertyChangeSubject {
     /**
      * Konstruktør til oprettelse af en ny laptop med et tilfældigt UUID
      */
-    public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType, ReservationManager reservationManager){
-        this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType, reservationManager);
+    public Laptop(String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
+        this(UUID.randomUUID(), brand, model, gigabyte, ram, performanceType);
     }
 
-    /**
-     * Konstruktør til oprettelse af en laptop med et specifikt UUID (bruges ved indlæsning fra database)
-     */
-    public Laptop(UUID id, String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType, ReservationManager manager){
+    // Eksisterende fuldkonstruktør
+    public Laptop(UUID id, String brand, String model, int gigabyte, int ram, PerformanceTypeEnum performanceType) {
         this.id = id;
         this.brand = brand;
         this.model = model;
         this.gigabyte = gigabyte;
         this.ram = ram;
         this.performanceType = performanceType;
-        theState = new AvailableState();
-        support = new PropertyChangeSupport(this);
-        this.addListener(manager);
+        this.support = new PropertyChangeSupport(this);
+    }
+
+    // Ny metode til registrering hos manager
+    public void registerWithManager(ReservationManager manager) {
+        if (manager != null) {
+            this.addListener(manager);
+        }
     }
 
     // Getters og setters
 
-    public UUID getId(){
+    public UUID getId() {
         return id;
     }
 
@@ -77,7 +80,7 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         this.ram = ram;
     }
 
-    public PerformanceTypeEnum getPerformanceType(){
+    public PerformanceTypeEnum getPerformanceType() {
         return performanceType;
     }
 
@@ -98,14 +101,14 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         return theState instanceof AvailableState;
     }
 
-    public boolean isLoaned(){
+    public boolean isLoaned() {
         return theState instanceof LoanedState;
     }
 
-    public void changeState(LaptopState newState){
+    public void changeState(LaptopState newState) {
         LaptopState oldState = theState;
         theState = newState;
-        if (newState instanceof AvailableState){
+        if (newState instanceof AvailableState) {
             support.firePropertyChange("toAvailableState", oldState, theState);
         }
     }
@@ -129,12 +132,12 @@ public class Laptop implements UnnamedPropertyChangeSubject {
     // Observer mønster kode
 
     @Override
-    public void addListener(PropertyChangeListener listener){
+    public void addListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
     @Override
-    public void removeListener(PropertyChangeListener listener){
+    public void removeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 

@@ -66,12 +66,13 @@ public class LaptopData implements LaptopDataInterface {
 
     @Override
     public Laptop createLaptop(PerformanceTypeEnum performanceTypeEnum, ReservationManager manager){
-        Laptop laptop = new Laptop("APPLE", "M3 Pro", 520, 18, performanceTypeEnum, manager);
+        Laptop laptop = new Laptop("APPLE", "M3 Pro", 520, 18, performanceTypeEnum);
+        laptop.registerWithManager(manager);
         allLaptops.add(laptop);
         return laptop;
-    }
 
 
 
 
+}
 }

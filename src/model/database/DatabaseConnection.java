@@ -38,16 +38,18 @@ public class DatabaseConnection {
       cpds.setPassword("Seshej1991");  // Erstat med dit PostgreSQL-kodeord
 
       // Forbindelsespool konfiguration
-      cpds.setInitialPoolSize(5);
-      cpds.setMinPoolSize(5);
-      cpds.setMaxPoolSize(20);
-      cpds.setAcquireIncrement(5);
-      cpds.setMaxStatements(100);
-      cpds.setIdleConnectionTestPeriod(300);
-      cpds.setTestConnectionOnCheckin(true);
+      // I DatabaseConnection.java, ændr connection pool konfigurationen:
+// Forbindelsespool konfiguration
+      cpds.setInitialPoolSize(3);     // Reducer fra 5
+      cpds.setMinPoolSize(2);         // Reducer fra 5
+      cpds.setMaxPoolSize(10);        // Reducer fra 20
+      cpds.setAcquireIncrement(1);    // Reducer fra 5
+      cpds.setMaxStatements(50);      // Reducer fra 100
+      cpds.setIdleConnectionTestPeriod(60); // Reducer fra 300 sekunder
+      cpds.setCheckoutTimeout(20000); // Øg timeout til 20 sekunder
 
       // Forbedret timeout indstillinger
-      cpds.setCheckoutTimeout(10000); // 10 sekunder timeout for at hente en forbindelse
+      // 10 sekunder timeout for at hente en forbindelse
       cpds.setMaxIdleTime(1800); // 30 minutter maksimal inaktiv tid
       cpds.setMaxConnectionAge(14400); // 4 timer maksimal levetid for en forbindelse
 
