@@ -1,7 +1,6 @@
 package model.database;
 
 import model.enums.PerformanceTypeEnum;
-import model.logic.reservationsLogic.ReservationManager;
 import model.models.*;
 
 import java.sql.*;
@@ -19,7 +18,7 @@ public class LaptopDAO {
      * @throws SQLException
      */
     public boolean insert(Laptop laptop) throws SQLException {
-        String sql = "INSERT INTO Laptop (laptop_uuid, brand, model, gigabyte, ram, performance, state) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Laptop (laptop_uuid, brand, model, gigabyte, ram, performance_type, state) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -29,7 +28,7 @@ public class LaptopDAO {
             stmt.setInt(4, laptop.getGigabyte());
             stmt.setInt(5, laptop.getRam());
             stmt.setString(6, laptop.getPerformanceType().name());
-            stmt.setString(7, laptop.getStateClassName()); // Corrected: Use getStateClassName()
+            stmt.setString(7, laptop.getStateClassName());
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -44,7 +43,7 @@ public class LaptopDAO {
      */
     public List<Laptop> getAllLaptops() throws SQLException {
         List<Laptop> laptops = new ArrayList<>();
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop";
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -67,7 +66,7 @@ public class LaptopDAO {
      * @throws SQLException
      */
     public Laptop getById(UUID id) throws SQLException {
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop WHERE laptop_uuid = ?";
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE laptop_uuid = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, id.toString());
@@ -88,7 +87,7 @@ public class LaptopDAO {
      */
     public List<Laptop> getAvailableLaptopsByPerformance(PerformanceTypeEnum performanceType) throws SQLException {
         List<Laptop> laptops = new ArrayList<>();
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop WHERE performance = ? AND state = 'AvailableState'";
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE performance_type = ? AND state = 'AvailableState'";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -112,7 +111,7 @@ public class LaptopDAO {
      * @throws SQLException
      */
     public boolean update(Laptop laptop) throws SQLException {
-        String sql = "UPDATE Laptop SET brand = ?, model = ?, gigabyte = ?, ram = ?, performance = ?, state = ? WHERE laptop_uuid = ?";
+        String sql = "UPDATE Laptop SET brand = ?, model = ?, gigabyte = ?, ram = ?, performance_type = ?, state = ? WHERE laptop_uuid = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -121,7 +120,7 @@ public class LaptopDAO {
             stmt.setInt(3, laptop.getGigabyte());
             stmt.setInt(4, laptop.getRam());
             stmt.setString(5, laptop.getPerformanceType().name());
-            stmt.setString(6, laptop.getStateClassName()); // Corrected: Use getStateClassName()
+            stmt.setString(6, laptop.getStateClassName());
             stmt.setString(7, laptop.getId().toString());
 
             int affectedRows = stmt.executeUpdate();
@@ -139,7 +138,7 @@ public class LaptopDAO {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, laptop.getStateClassName()); // Corrected: Use getStateClassName()
+            stmt.setString(1, laptop.getStateClassName());
             stmt.setString(2, laptop.getId().toString());
 
             int affectedRows = stmt.executeUpdate();
@@ -159,7 +158,7 @@ public class LaptopDAO {
         String model = rs.getString("model");
         int gigabyte = rs.getInt("gigabyte");
         int ram = rs.getInt("ram");
-        PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance"));
+        PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance_type"));
 
         // Fjern eventuelle kald der involverer ReservationManager her
         Laptop laptop = new Laptop(laptopId, brand, model, gigabyte, ram, performanceType);
