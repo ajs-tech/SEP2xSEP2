@@ -137,6 +137,7 @@ public class DAOTester {
       System.out.println("Total: " + laptops.size() + " laptops");
     }
   }
+
   private static ReservationManager getReservationManager() {
     if (reservationManager == null) {
       reservationManager = new ReservationManager();
@@ -201,20 +202,17 @@ public class DAOTester {
     System.out.print("Model: ");
     String model = scanner.nextLine();
 
-    System.out.print("Gigabyte (hårddisk): ");
-    int gigabyte = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
+    int gigabyte = getIntInput("Gigabyte (hårddisk): ");
+    int ram = getIntInput("RAM: ");
 
-    System.out.print("RAM: ");
-    int ram = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
 
     System.out.print("Performance Type (LOW/HIGH): ");
     String perfType = scanner.nextLine().toUpperCase();
     PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(perfType);
 
     // Opdater konstruktøren til at inkludere reservationManager
-    Laptop laptop = new Laptop(brand, model, gigabyte, ram, performanceType, reservationManager);
+    Laptop laptop = new Laptop(brand, model, gigabyte, ram, performanceType);
+    laptop.registerWithManager(getReservationManager());
     boolean success = laptopDAO.insert(laptop);
 
     if (success) {
@@ -222,6 +220,23 @@ public class DAOTester {
     } else {
       System.out.println("Kunne ikke oprette laptop.");
     }
+  }
+  // Helper method to get validated integer input
+  private static int getIntInput(String prompt) {
+    int value = 0;
+    boolean valid = false;
+    do {
+      try {
+        System.out.print(prompt);
+        value = scanner.nextInt();
+        valid = true;
+      } catch (InputMismatchException e) {
+        System.out.println("Ugyldig indtastning. Skal være et heltal.");
+        scanner.nextLine(); // Clear the invalid input
+      }
+    } while (!valid);
+    scanner.nextLine(); // Consume the remaining newline
+    return value;
   }
 
   // Metode 5: Tilføj ny student
@@ -234,16 +249,13 @@ public class DAOTester {
     System.out.print("Uddannelse: ");
     String degree = scanner.nextLine();
 
-    System.out.print("VIA ID: ");
-    int viaId = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
+    int viaId = getIntInput("VIA ID: ");
 
     System.out.print("Email: ");
     String email = scanner.nextLine();
 
-    System.out.print("Telefonnummer: ");
-    int phoneNumber = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
+    int phoneNumber = getIntInput("Telefonnummer: ");
+
 
     System.out.print("Performance behov (LOW/HIGH): ");
     String perfType = scanner.nextLine().toUpperCase();
@@ -318,8 +330,7 @@ public class DAOTester {
     System.out.println("2: COMPLETED");
     System.out.println("3: CANCELLED");
 
-    int statusChoice = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
+    int statusChoice = getIntInput("Choose: ");
 
     ReservationStatusEnum newStatus;
     switch (statusChoice) {
@@ -565,6 +576,7 @@ public class DAOTester {
     System.out.println("Lav-ydelses kø: " + lowQueueSize + " studerende");
     System.out.println("Total i køer: " + (highQueueSize + lowQueueSize) + " studerende");
   }
+
   private static void freeLaptopAndCheckAutomaticReservation() throws SQLException {
     System.out.println("\n=== Frigør Laptop og Tjek Automatisk Reservation ===");
 
@@ -606,9 +618,8 @@ public class DAOTester {
     }
 
     // Vælg hvilken reservation der skal afsluttes
-    System.out.print("Vælg reservation at afslutte (1-" + activeReservations.size() + "): ");
-    int resChoice = scanner.nextInt();
-    scanner.nextLine(); // Fjern newline
+    int resChoice = getIntInput("Vælg reservation at afslutte (1-" + activeReservations.size() + "): ");
+
 
     if (resChoice < 1 || resChoice > activeReservations.size()) {
       System.out.println("Ugyldigt valg.");

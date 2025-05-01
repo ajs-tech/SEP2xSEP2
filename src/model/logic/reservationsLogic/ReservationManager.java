@@ -34,19 +34,20 @@ public class ReservationManager implements PropertyChangeListener {
     private final StudentDAO studentDAO;
     private final Log log;
 
-    // I ReservationManager.java, ændr konstruktøren:
     public ReservationManager() {
-        try {
-            reservationList = new ArrayList<>();
-            lowPerformanceQueue = new QueueForLowPowerLaptops();
-            highPerformanceQueue = new QueueForHighPowerLaptops();
-            reservationFactory = new ReservationFactory();
-            queueDAO = new QueueDAO();
-            reservationDAO = new ReservationDAO();
-            laptopDAO = new LaptopDAO();
-            studentDAO = new StudentDAO();
-            log = Log.getInstance();
+        // Initialize all instance variables FIRST.
+        reservationList = new ArrayList<>();
+        lowPerformanceQueue = new QueueForLowPowerLaptops();
+        highPerformanceQueue = new QueueForHighPowerLaptops();
+        reservationFactory = new ReservationFactory();
+        queueDAO = new QueueDAO();
+        reservationDAO = new ReservationDAO();
+        laptopDAO = new LaptopDAO();
+        studentDAO = new StudentDAO();
+        log = Log.getInstance();
 
+        // Then, proceed with operations that might throw exceptions.
+        try {
             // Omslut med try-catch for at undgå krasn ved startup
             try {
                 loadReservationsFromDatabase();
@@ -57,12 +58,10 @@ public class ReservationManager implements PropertyChangeListener {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Kritisk fejl ved initialisering af ReservationManager: " + e.getMessage(), e);
+            log.addToLog("Kritisk fejl ved initialisering af ReservationManager: " + e.getMessage()); // Added more detailed logging
         }
     }
 
-    /**
-     * Indlæs aktive reservationer fra databasen ved opstart
-     */
     private void loadReservationsFromDatabase() throws SQLException {
         try {
             List<Reservation> dbReservations = reservationDAO.getAllReservations();
@@ -81,9 +80,6 @@ public class ReservationManager implements PropertyChangeListener {
         }
     }
 
-    /**
-     * Indlæs køer fra databasen ved opstart
-     */
     private void loadQueuesFromDatabase() throws SQLException {
         // Indlæs lav-ydelses kø
         List<Student> lowPerformanceStudents = queueDAO.getStudentsInQueue(PerformanceTypeEnum.LOW);
@@ -103,11 +99,6 @@ public class ReservationManager implements PropertyChangeListener {
                 " i lav-ydelses kø, " + highPerformanceStudents.size() + " i høj-ydelses kø");
     }
 
-    // Reservations-relaterede metoder
-
-    /**
-     * Oprettelse af reservation med database persistering
-     */
     public Reservation createReservation(Laptop laptop, Student student) {
         try {
             // Opret reservation objekt
@@ -141,9 +132,6 @@ public class ReservationManager implements PropertyChangeListener {
         }
     }
 
-    /**
-     * Opdaterer en reservations status med database persistering
-     */
     public boolean updateReservationStatus(UUID reservationId, ReservationStatusEnum newStatus) {
         try {
             // Find reservationen i hukommelsen
@@ -161,6 +149,8 @@ public class ReservationManager implements PropertyChangeListener {
                 if (reservation == null) {
                     return false;
                 }
+                // Add to in memory list if found in database
+                reservationList.add(reservation); // Added
             }
 
             // Opdater status
@@ -190,26 +180,15 @@ public class ReservationManager implements PropertyChangeListener {
         }
     }
 
-    // Kø-relaterede metoder
-
-    /**
-     * Tilføj student til høj-ydelses kø med database persistering
-     */
     public void addToHighPerformanceQueue(Student student) {
         try {
-            // Tjek først om studenten allerede har en laptop eller er i en anden kø
-            if (student.isHasLaptop()) {
-                logger.info("Student " + student.getName() + " har allerede en laptop, tilføjes ikke til kø");
-                log.addToLog("Student " + student.getName() + " har allerede en laptop, tilføjes ikke til kø");
+            // check if student is already in any queue or has a laptop, if so return.
+            if(student.isHasLaptop() || queueDAO.isStudentInAnyQueue(student.getViaId()))
+            {
+                logger.info("Student " + student.getName() + " har allerede en laptop eller er i en anden kø, tilføjes ikke til kø");
+                log.addToLog("Student " + student.getName() + " har allerede en laptop eller er i en anden kø, tilføjes ikke til kø");
                 return;
             }
-
-            if (queueDAO.isStudentInAnyQueue(student.getViaId())) {
-                logger.info("Student " + student.getName() + " er allerede i en kø");
-                log.addToLog("Student " + student.getName() + " er allerede i en kø");
-                return;
-            }
-
             // Tjek om studentens ydelsesbehov passer til køen
             if (student.getPerformanceNeeded() != PerformanceTypeEnum.HIGH) {
                 logger.info("Student " + student.getName() + " har ikke behov for høj ydelse, omdirigerer");
@@ -232,10 +211,10 @@ public class ReservationManager implements PropertyChangeListener {
                         // Der er en tilgængelig laptop, tildel den med det samme
                         Laptop laptop = availableLaptops.get(0);
 
-                        // Fjern først fra køen
-                        queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.HIGH);
-                        highPerformanceQueue.getAndRemoveNextInLineForHighPerformance();
-
+                        // Fjern studenten fra køen in-memory
+                        Student removedStudent = highPerformanceQueue.getAndRemoveNextInLineForHighPerformance(); // Changed
+                        // Fjern student fra databasen.
+                        queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.HIGH); // Changed
                         // Opret reservation
                         createReservation(laptop, student);
                     }
@@ -252,24 +231,15 @@ public class ReservationManager implements PropertyChangeListener {
         }
     }
 
-    /**
-     * Tilføj student til lav-ydelses kø med database persistering
-     */
     public void addToLowPerformanceQueue(Student student) {
         try {
-            // Tjek først om studenten allerede har en laptop eller er i en anden kø
-            if (student.isHasLaptop()) {
-                logger.info("Student " + student.getName() + " har allerede en laptop, tilføjes ikke til kø");
-                log.addToLog("Student " + student.getName() + " har allerede en laptop, tilføjes ikke til kø");
+            // check if student is already in any queue or has a laptop, if so return.
+            if(student.isHasLaptop() || queueDAO.isStudentInAnyQueue(student.getViaId()))
+            {
+                logger.info("Student " + student.getName() + " har allerede en laptop eller er i en anden kø, tilføjes ikke til kø");
+                log.addToLog("Student " + student.getName() + " har allerede en laptop eller er i en anden kø, tilføjes ikke til kø");
                 return;
             }
-
-            if (queueDAO.isStudentInAnyQueue(student.getViaId())) {
-                logger.info("Student " + student.getName() + " er allerede i en kø");
-                log.addToLog("Student " + student.getName() + " er allerede i en kø");
-                return;
-            }
-
             // Tjek om studentens ydelsesbehov passer til køen
             if (student.getPerformanceNeeded() != PerformanceTypeEnum.LOW) {
                 logger.info("Student " + student.getName() + " har behov for høj ydelse, omdirigerer");
@@ -291,10 +261,9 @@ public class ReservationManager implements PropertyChangeListener {
                     if (!availableLaptops.isEmpty()) {
                         // Der er en tilgængelig laptop, tildel den med det samme
                         Laptop laptop = availableLaptops.get(0);
-
                         // Fjern først fra køen
-                        queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.LOW);
-                        lowPerformanceQueue.getAndRemoveNextInLineForLowPerformance();
+                        Student removedStudent = lowPerformanceQueue.getAndRemoveNextInLineForLowPerformance(); // Changed
+                        queueDAO.removeFromQueue(student.getViaId(), PerformanceTypeEnum.LOW); // Changed
 
                         // Opret reservation
                         createReservation(laptop, student);
@@ -312,13 +281,12 @@ public class ReservationManager implements PropertyChangeListener {
         }
     }
 
-    // Metoder til at hente kø-information
-
     public int getHighNeedingQueueSize() {
         try {
             return queueDAO.getQueueSize(PerformanceTypeEnum.HIGH);
         } catch (SQLException e) {
             logger.log(Level.WARNING, "Fejl ved hentning af høj-ydelses kø størrelse: " + e.getMessage(), e);
+            log.addToLog("WARNING: Fejl ved hentning af høj-ydelses kø størrelse: " + e.getMessage() + ". Returning in-memory queue size as fallback.");// Added more specific log
             // Returner in-memory størrelse som fallback
             return highPerformanceQueue.getHighNeedingQueueSize();
         }
@@ -329,18 +297,18 @@ public class ReservationManager implements PropertyChangeListener {
             return queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
         } catch (SQLException e) {
             logger.log(Level.WARNING, "Fejl ved hentning af lav-ydelses kø størrelse: " + e.getMessage(), e);
+            log.addToLog("WARNING: Fejl ved hentning af lav-ydelses kø størrelse: " + e.getMessage() + ". Returning in-memory queue size as fallback.");// Added more specific log
             // Returner in-memory størrelse som fallback
             return lowPerformanceQueue.getLowNeedingQueueSize();
         }
     }
-
-    // Metoder til at hente information om reservationer
 
     public int getAmountOfReservationsToDate() {
         try {
             return reservationDAO.getAllReservations().size();
         } catch (SQLException e) {
             logger.log(Level.WARNING, "Fejl ved hentning af alle reservationer: " + e.getMessage(), e);
+            log.addToLog("WARNING: Fejl ved hentning af alle reservationer: " + e.getMessage() + ". Returning in-memory list size as fallback."); // Added more specific log
             // Returner in-memory størrelse som fallback
             return reservationList.size();
         }
@@ -360,8 +328,6 @@ public class ReservationManager implements PropertyChangeListener {
         }
         return reservationList.get(reservationList.size() - 1);
     }
-
-    // Observer mønster implementation
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -393,6 +359,11 @@ public class ReservationManager implements PropertyChangeListener {
                         // Opret reservation
                         createReservation(laptop, nextStudent);
                     }
+                }
+                else
+                {
+                    logger.info("No student found in database to assign to laptop" + laptop.getId());
+                    log.addToLog("No student found in database to assign to laptop" + laptop.getId());
                 }
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Fejl ved håndtering af tilgængelig laptop: " + e.getMessage(), e);
