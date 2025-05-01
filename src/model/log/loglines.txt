@@ -186,3 +186,7 @@ Indlæst 1 aktive reservationer fra databasen >> 11:11:42 01-05-2025
 Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 11:11:42 01-05-2025
 Indlæst 1 aktive reservationer fra databasen >> 11:11:43 01-05-2025
 Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 11:11:43 01-05-2025
+Indlæst 1 aktive reservationer fra databasen >> 12:14:40 01-05-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 12:14:40 01-05-2025
+Indlæst 1 aktive reservationer fra databasen >> 12:17:28 01-05-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 12:17:28 01-05-2025

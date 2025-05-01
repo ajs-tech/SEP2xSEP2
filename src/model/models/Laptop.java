@@ -16,6 +16,7 @@ public class Laptop implements UnnamedPropertyChangeSubject {
     private final PerformanceTypeEnum performanceType;
     private LaptopState theState;
     private final PropertyChangeSupport support;
+    private ReservationManager manager;
 
     /**
      * Konstruktør til oprettelse af en ny laptop med et tilfældigt UUID
@@ -32,17 +33,16 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         this.gigabyte = gigabyte;
         this.ram = ram;
         this.performanceType = performanceType;
+        this.theState = new AvailableState(); // Initialize theState here!
         this.support = new PropertyChangeSupport(this);
+        this.manager = null;
     }
 
-    // Ny metode til registrering hos manager
-    public void registerWithManager(ReservationManager manager) {
-        if (manager != null) {
-            this.addListener(manager);
-        }
+    public void registerWithManager(ReservationManager manager)
+    {
+        this.manager = manager;
+        addPropertyChangeListener(manager);
     }
-
-    // Getters og setters
 
     public UUID getId() {
         return id;
@@ -52,65 +52,47 @@ public class Laptop implements UnnamedPropertyChangeSubject {
         return brand;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
     public String getModel() {
         return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
     }
 
     public int getGigabyte() {
         return gigabyte;
     }
 
-    public void setGigabyte(int gigabyte) {
-        this.gigabyte = gigabyte;
-    }
-
     public int getRam() {
         return ram;
-    }
-
-    public void setRam(int ram) {
-        this.ram = ram;
     }
 
     public PerformanceTypeEnum getPerformanceType() {
         return performanceType;
     }
 
-    // Koden angående laptop state
-
-    public LaptopState getState() {
+    public LaptopState getTheState() {
         return theState;
     }
 
-    /**
-     * Henter statens klassenavn til brug for databasen
-     */
+    public void changeState(LaptopState newState) {
+        LaptopState oldState = this.theState;
+        this.theState = newState;
+        // Triggerer lyttere - OBS!!: Kaldes kun hvis tilstanden er ændret
+        if(oldState != theState) {
+            this.support.firePropertyChange(oldState.getPropertyName(), oldState, newState);
+        }
+    }
+
+    public boolean isAvailable()
+    {
+        return theState.isAvailable();
+    }
+
+    public boolean isLoaned()
+    {
+        return theState.isLoaned();
+    }
+
     public String getStateClassName() {
         return theState.getClass().getSimpleName();
-    }
-
-    public boolean isAvailable() {
-        return theState instanceof AvailableState;
-    }
-
-    public boolean isLoaned() {
-        return theState instanceof LoanedState;
-    }
-
-    public void changeState(LaptopState newState) {
-        LaptopState oldState = theState;
-        theState = newState;
-        if (newState instanceof AvailableState) {
-            support.firePropertyChange("toAvailableState", oldState, theState);
-        }
     }
 
     /**
@@ -122,27 +104,20 @@ public class Laptop implements UnnamedPropertyChangeSubject {
             if (!(theState instanceof LoanedState)) {
                 theState = new LoanedState();
             }
-        } else {
+        } else if ("AvailableState".equals(stateName)){
             if (!(theState instanceof AvailableState)) {
                 theState = new AvailableState();
             }
         }
     }
 
-    // Observer mønster kode
-
     @Override
-    public void addListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        this.support.addPropertyChangeListener(pcl);
     }
 
     @Override
-    public void removeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public String toString() {
-        return brand + " " + model + " (" + performanceType + ")";
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        this.support.removePropertyChangeListener(pcl);
     }
 }

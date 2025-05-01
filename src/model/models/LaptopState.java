@@ -1,5 +1,7 @@
 package model.models;
 
 public interface LaptopState {
-    void click(Laptop laptop);
+    String getPropertyName();
+    boolean isAvailable();
+    boolean isLoaned();
 }

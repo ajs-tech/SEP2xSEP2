@@ -1,32 +1,50 @@
 package model.database;
 
 import model.enums.PerformanceTypeEnum;
-
 import model.logic.reservationsLogic.ReservationManager;
-import model.models.Laptop;
-import model.models.AvailableState;
-import model.models.LoanedState;
+import model.models.*;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
-/**
- * Data Access Object for Laptop entiteter med forbedret UUID håndtering
- */
 public class LaptopDAO {
-    private static final Logger logger = Logger.getLogger(LaptopDAO.class.getName());
+
+    /**
+     * Indsætter en ny laptop i databasen
+     *
+     * @param laptop Laptop objektet som skal indsættes
+     * @return true hvis operationen lykkedes
+     * @throws SQLException
+     */
+    public boolean insert(Laptop laptop) throws SQLException {
+        String sql = "INSERT INTO Laptop (laptop_uuid, brand, model, gigabyte, ram, performance, state) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, laptop.getId().toString());
+            stmt.setString(2, laptop.getBrand());
+            stmt.setString(3, laptop.getModel());
+            stmt.setInt(4, laptop.getGigabyte());
+            stmt.setInt(5, laptop.getRam());
+            stmt.setString(6, laptop.getPerformanceType().name());
+            stmt.setString(7, laptop.getStateClassName()); // Corrected: Use getStateClassName()
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        }
+    }
 
     /**
      * Henter alle laptops fra databasen
-     * @return Liste af laptops
+     *
+     * @return En liste af alle laptops i databasen
+     * @throws SQLException
      */
     public List<Laptop> getAllLaptops() throws SQLException {
         List<Laptop> laptops = new ArrayList<>();
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop";
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop";
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -37,22 +55,22 @@ public class LaptopDAO {
                 laptops.add(laptop);
             }
         }
+
         return laptops;
     }
 
     /**
-     * Henter laptop baseret på UUID
-     * @param id Laptop UUID
-     * @return Laptop object eller null hvis ikke fundet
+     * Henter en laptop fra databasen baseret på ID
+     *
+     * @param id ID'et på den laptop der skal hentes
+     * @return Laptop objektet med det givne ID eller null hvis ikke fundet
+     * @throws SQLException
      */
     public Laptop getById(UUID id) throws SQLException {
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop WHERE laptop_uuid = ?";
-
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop WHERE laptop_uuid = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, id.toString());
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToLaptop(rs);
@@ -63,46 +81,47 @@ public class LaptopDAO {
     }
 
     /**
-     * Indsætter en ny laptop i databasen
-     * @param laptop Laptop objekt
-     * @return true hvis operationen lykkedes
+     * Henter alle tilgængelige laptops med en given ydelsestype
+     * @param performanceType Ydelsestypen som skal matches
+     * @return Liste af tilgængelige laptops med den matchende ydelsestype
+     * @throws SQLException
      */
-    public boolean insert(Laptop laptop) throws SQLException {
-        String sql = "INSERT INTO Laptop (laptop_uuid, brand, model, gigabyte, ram, performance_type, state) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    public List<Laptop> getAvailableLaptopsByPerformance(PerformanceTypeEnum performanceType) throws SQLException {
+        List<Laptop> laptops = new ArrayList<>();
+        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance, state FROM Laptop WHERE performance = ? AND state = 'AvailableState'";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, performanceType.name());
 
-            stmt.setString(1, laptop.getId().toString());
-            stmt.setString(2, laptop.getBrand());
-            stmt.setString(3, laptop.getModel());
-            stmt.setInt(4, laptop.getGigabyte());
-            stmt.setInt(5, laptop.getRam());
-            stmt.setString(6, laptop.getPerformanceType().name());
-            stmt.setString(7, laptop.getStateClassName());
-
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Laptop laptop = mapResultSetToLaptop(rs);
+                    laptops.add(laptop);
+                }
+            }
         }
+
+        return laptops;
     }
 
     /**
-     * Opdaterer en eksisterende laptop
-     * @param laptop Laptop objekt med opdaterede oplysninger
+     * Opdaterer en laptop i databasen
+     * @param laptop Laptop objekt med de nye værdier
      * @return true hvis operationen lykkedes
+     * @throws SQLException
      */
     public boolean update(Laptop laptop) throws SQLException {
-        String sql = "UPDATE Laptop SET brand = ?, model = ?, gigabyte = ?, ram = ?, performance_type = ?, state = ? WHERE laptop_uuid = ?";
+        String sql = "UPDATE Laptop SET brand = ?, model = ?, gigabyte = ?, ram = ?, performance = ?, state = ? WHERE laptop_uuid = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, laptop.getBrand());
             stmt.setString(2, laptop.getModel());
             stmt.setInt(3, laptop.getGigabyte());
             stmt.setInt(4, laptop.getRam());
             stmt.setString(5, laptop.getPerformanceType().name());
-            stmt.setString(6, laptop.getStateClassName());
+            stmt.setString(6, laptop.getStateClassName()); // Corrected: Use getStateClassName()
             stmt.setString(7, laptop.getId().toString());
 
             int affectedRows = stmt.executeUpdate();
@@ -120,70 +139,27 @@ public class LaptopDAO {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, laptop.getStateClassName());
+            stmt.setString(1, laptop.getStateClassName()); // Corrected: Use getStateClassName()
             stmt.setString(2, laptop.getId().toString());
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         }
     }
-
     /**
-     * Sletter en laptop fra databasen
-     * @param id Laptop UUID
-     * @return true hvis operationen lykkedes
+     * Mapper et ResultSet objekt til et Laptop objekt
+     *
+     * @param rs ResultSet objektet som skal mappes
+     * @return Det Laptop objekt som er mappet fra ResultSet objektet
+     * @throws SQLException
      */
-    public boolean delete(UUID id) throws SQLException {
-        String sql = "DELETE FROM Laptop WHERE laptop_uuid = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, id.toString());
-
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-        }
-    }
-
-    /**
-     * Henter alle tilgængelige laptops med en specifik ydelsesfaktor
-     * @param performanceType ydelsesfaktor at søge efter
-     * @return Liste af tilgængelige laptops med den angivne ydelsesfaktor
-     */
-    public List<Laptop> getAvailableLaptopsByPerformance(PerformanceTypeEnum performanceType) throws SQLException {
-        List<Laptop> laptops = new ArrayList<>();
-        String sql = "SELECT laptop_uuid, brand, model, gigabyte, ram, performance_type, state FROM Laptop " +
-                "WHERE performance_type = ? AND state = 'AvailableState'";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, performanceType.name());
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Laptop laptop = mapResultSetToLaptop(rs);
-                    laptops.add(laptop);
-                }
-            }
-        }
-        return laptops;
-    }
-
-    /**
-     * Forbedret metode til at konvertere ResultSet til Laptop objekt
-     * Bruger UUID fra databasen i stedet for at generere et nyt
-     */
-    // I LaptopDAO.java, ændr mapResultSetToLaptop metoden hvis den indeholder ReservationManager referencer:
     private Laptop mapResultSetToLaptop(ResultSet rs) throws SQLException {
         UUID laptopId = UUID.fromString(rs.getString("laptop_uuid"));
         String brand = rs.getString("brand");
         String model = rs.getString("model");
         int gigabyte = rs.getInt("gigabyte");
         int ram = rs.getInt("ram");
-        PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance_type"));
+        PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance"));
 
         // Fjern eventuelle kald der involverer ReservationManager her
         Laptop laptop = new Laptop(laptopId, brand, model, gigabyte, ram, performanceType);

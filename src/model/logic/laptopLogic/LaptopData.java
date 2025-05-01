@@ -47,7 +47,7 @@ public class LaptopData implements LaptopDataInterface {
     public int getAmountOfLaptopsByState(String classSimpleName){
         int numberOfLaptops = 0;
         for (Laptop laptop : allLaptops){
-            if (laptop.getState().getClass().getSimpleName().equals(classSimpleName)){
+            if (laptop.getTheState().getClass().getSimpleName().equals(classSimpleName)){ // Corrected line
                 numberOfLaptops++;
             }
         }
@@ -70,9 +70,5 @@ public class LaptopData implements LaptopDataInterface {
         laptop.registerWithManager(manager);
         allLaptops.add(laptop);
         return laptop;
-
-
-
-
-}
+    }
 }

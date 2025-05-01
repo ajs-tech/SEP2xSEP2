@@ -1,13 +1,17 @@
 package model.models;
 
-public class LoanedState implements LaptopState{
-    public final static LaptopState AVAILABLE_STATE_INSTANCE = new AvailableState();
-
-
+public class LoanedState implements LaptopState {
     @Override
-    public void click(Laptop laptop) {
-        laptop.changeState(AVAILABLE_STATE_INSTANCE);
+    public String getPropertyName() {
+        return "toLoanedState";
+    }
+    @Override
+    public boolean isAvailable() {
+        return false;
     }
 
-
+    @Override
+    public boolean isLoaned() {
+        return true;
+    }
 }
