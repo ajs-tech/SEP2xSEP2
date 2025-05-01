@@ -38,3 +38,25 @@ Laptop [ID: d18daf76-d364-4548-bb95-17eb34fc68e2, Lenovo IdeaPad 4] skiftet til 
 Reservation oprettet med id:3c1ea99c-93c3-4a3f-84aa-d23f95d1452c >> Laptop [Lenovo IdeaPad 4] tildelt til student [LowPerformance Student 4]. >> 10:45:27 30-04-2025
 Laptop [ID: 77ad1519-8a98-4dbc-a9f4-e068bbfab48a, Lenovo IdeaPad 5] skiftet til LoanedState. >> 10:45:27 30-04-2025
 Reservation oprettet med id:d655a99e-5f5c-4272-b7f5-9365f8691adb >> Laptop [Lenovo IdeaPad 5] tildelt til student [LowPerformance Student 5]. >> 10:45:27 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:41:10 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:41:10 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:45:16 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:45:16 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:45:57 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:45:57 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:45:57 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:45:57 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:45:57 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:45:57 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:45:57 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:45:57 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:49:58 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:49:58 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:56:24 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:56:24 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 23:59:27 30-04-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 0 i høj-ydelses kø >> 23:59:27 30-04-2025
+Indlæst 0 aktive reservationer fra databasen >> 00:01:40 01-05-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 00:01:40 01-05-2025
+Indlæst 0 aktive reservationer fra databasen >> 00:02:45 01-05-2025
+Indlæst køer fra databasen: 0 i lav-ydelses kø, 1 i høj-ydelses kø >> 00:02:45 01-05-2025
