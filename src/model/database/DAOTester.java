@@ -2,15 +2,13 @@ package model.database;
 
 import model.enums.PerformanceTypeEnum;
 import model.enums.ReservationStatusEnum;
+import model.logic.reservationsLogic.ReservationManager;
 import model.models.Laptop;
 import model.models.Student;
 import model.models.Reservation;
 
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Interaktivt test-program til at afprøve DAO-funktionalitet via konsol
@@ -20,6 +18,8 @@ public class DAOTester {
   private static LaptopDAO laptopDAO = new LaptopDAO();
   private static StudentDAO studentDAO = new StudentDAO();
   private static ReservationDAO reservationDAO = new ReservationDAO();
+  private static QueueDAO queueDAO = new QueueDAO(); // Tilføjet QueueDAO
+  private static ReservationManager reservationManager = new ReservationManager();
 
   public static void main(String[] args) {
     boolean running = true;
@@ -37,6 +37,12 @@ public class DAOTester {
       System.out.println("7: Opdater reservation status");
       System.out.println("8: Find laptop via ID");
       System.out.println("9: Find student via ID");
+      // Nye menu-punkter til queue-funktionalitet
+      System.out.println("10: Tilføj student til kø");
+      System.out.println("11: Vis studerende i kø");
+      System.out.println("12: Fjern student fra kø");
+      System.out.println("13: Vis kø-størrelse");
+      System.out.println("14: Frigør laptop og tjek automatic reservation");
       System.out.println("0: Afslut");
 
       System.out.print("Vælg: ");
@@ -74,6 +80,22 @@ public class DAOTester {
             break;
           case 9:
             findStudentById();
+            break;
+          // Nye test-metoder til queue-funktionalitet
+          case 10:
+            addStudentToQueue();
+            break;
+          case 11:
+            showStudentsInQueue();
+            break;
+          case 12:
+            removeStudentFromQueue();
+            break;
+          case 13:
+            showQueueSize();
+            break;
+          case 14:
+            freeLaptopAndCheckAutomaticReservation(); // NY FUNKTION
             break;
           default:
             System.out.println("Ugyldigt valg. Prøv igen.");
@@ -185,7 +207,8 @@ public class DAOTester {
     String perfType = scanner.nextLine().toUpperCase();
     PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(perfType);
 
-    Laptop laptop = new Laptop(brand, model, gigabyte, ram, performanceType);
+    // Opdater konstruktøren til at inkludere reservationManager
+    Laptop laptop = new Laptop(brand, model, gigabyte, ram, performanceType, reservationManager);
     boolean success = laptopDAO.insert(laptop);
 
     if (success) {
@@ -384,4 +407,305 @@ public class DAOTester {
       }
     }
   }
+
+  // Metode 10: Tilføj student til kø
+  private static void addStudentToQueue() throws SQLException {
+    System.out.println("\n=== Tilføj Student til Kø ===");
+
+    System.out.print("Student VIA ID: ");
+    int studentId = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    Student student = studentDAO.getById(studentId);
+    if (student == null) {
+      System.out.println("Student ikke fundet.");
+      return;
+    }
+
+    if (student.isHasLaptop()) {
+      System.out.println("Student har allerede en laptop tildelt og kan ikke tilføjes til kø.");
+      return;
+    }
+
+    if (queueDAO.isStudentInAnyQueue(studentId)) {
+      System.out.println("Student er allerede i en kø.");
+      return;
+    }
+
+    System.out.println("Vælg kø-type:");
+    System.out.println("1: Høj-ydelses laptops");
+    System.out.println("2: Lav-ydelses laptops");
+
+    int queueTypeChoice = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    PerformanceTypeEnum performanceType;
+    switch (queueTypeChoice) {
+      case 1:
+        performanceType = PerformanceTypeEnum.HIGH;
+        break;
+      case 2:
+        performanceType = PerformanceTypeEnum.LOW;
+        break;
+      default:
+        System.out.println("Ugyldigt valg.");
+        return;
+    }
+
+    boolean success = queueDAO.addToQueue(student, performanceType);
+
+    if (success) {
+      System.out.println("Student tilføjet til " + performanceType + " kø med succes!");
+    } else {
+      System.out.println("Kunne ikke tilføje student til kø.");
+    }
+  }
+
+  // Metode 11: Vis studerende i kø
+  private static void showStudentsInQueue() throws SQLException {
+    System.out.println("\n=== Vis Studerende i Kø ===");
+
+    System.out.println("Vælg kø-type:");
+    System.out.println("1: Høj-ydelses laptops");
+    System.out.println("2: Lav-ydelses laptops");
+
+    int queueTypeChoice = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    PerformanceTypeEnum performanceType;
+    switch (queueTypeChoice) {
+      case 1:
+        performanceType = PerformanceTypeEnum.HIGH;
+        break;
+      case 2:
+        performanceType = PerformanceTypeEnum.LOW;
+        break;
+      default:
+        System.out.println("Ugyldigt valg.");
+        return;
+    }
+
+    List<Student> studentsInQueue = queueDAO.getStudentsInQueue(performanceType);
+
+    if (studentsInQueue.isEmpty()) {
+      System.out.println("Ingen studerende i " + performanceType + " køen.");
+    } else {
+      System.out.println("Studerende i " + performanceType + " køen:");
+      System.out.println("Række | VIA ID | Navn | Email");
+      System.out.println("---------------------------");
+
+      for (int i = 0; i < studentsInQueue.size(); i++) {
+        Student student = studentsInQueue.get(i);
+        System.out.printf("%d | %d | %s | %s%n",
+                i + 1,
+                student.getViaId(),
+                student.getName(),
+                student.getEmail());
+      }
+      System.out.println("Total: " + studentsInQueue.size() + " studerende i køen");
+    }
+  }
+
+  // Metode 12: Fjern student fra kø
+  private static void removeStudentFromQueue() throws SQLException {
+    System.out.println("\n=== Fjern Student fra Kø ===");
+
+    System.out.print("Student VIA ID: ");
+    int studentId = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    if (!queueDAO.isStudentInAnyQueue(studentId)) {
+      System.out.println("Student er ikke i nogen kø.");
+      return;
+    }
+
+    System.out.println("Vælg kø-type:");
+    System.out.println("1: Høj-ydelses laptops");
+    System.out.println("2: Lav-ydelses laptops");
+
+    int queueTypeChoice = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    PerformanceTypeEnum performanceType;
+    switch (queueTypeChoice) {
+      case 1:
+        performanceType = PerformanceTypeEnum.HIGH;
+        break;
+      case 2:
+        performanceType = PerformanceTypeEnum.LOW;
+        break;
+      default:
+        System.out.println("Ugyldigt valg.");
+        return;
+    }
+
+    boolean success = queueDAO.removeFromQueue(studentId, performanceType);
+
+    if (success) {
+      System.out.println("Student fjernet fra " + performanceType + " kø med succes!");
+    } else {
+      System.out.println("Kunne ikke fjerne student fra kø. Kontroller at studenten er i den valgte kø.");
+    }
+  }
+
+  // Metode 13: Vis kø-størrelse
+  private static void showQueueSize() throws SQLException {
+    System.out.println("\n=== Vis Kø-størrelse ===");
+
+    int highQueueSize = queueDAO.getQueueSize(PerformanceTypeEnum.HIGH);
+    int lowQueueSize = queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
+
+    System.out.println("Høj-ydelses kø: " + highQueueSize + " studerende");
+    System.out.println("Lav-ydelses kø: " + lowQueueSize + " studerende");
+    System.out.println("Total i køer: " + (highQueueSize + lowQueueSize) + " studerende");
+  }
+  private static void freeLaptopAndCheckAutomaticReservation() throws SQLException {
+    System.out.println("\n=== Frigør Laptop og Tjek Automatisk Reservation ===");
+
+    // Tjek først om der er studerende i køen
+    int highQueueSize = queueDAO.getQueueSize(PerformanceTypeEnum.HIGH);
+    int lowQueueSize = queueDAO.getQueueSize(PerformanceTypeEnum.LOW);
+
+    if (highQueueSize == 0 && lowQueueSize == 0) {
+      System.out.println("Der er ingen studerende i køen. Test kræver mindst én student i køen.");
+      System.out.println("Brug menu-punkt 10 for at tilføje en student til køen først.");
+      return;
+    }
+
+    // Vis alle aktive reservationer
+    System.out.println("Aktive reservationer:");
+    List<Reservation> activeReservations = new ArrayList<>();
+    for (Reservation res : reservationDAO.getAllReservations()) {
+      if (res.getStatus() == ReservationStatusEnum.ACTIVE) {
+        activeReservations.add(res);
+      }
+    }
+
+    if (activeReservations.isEmpty()) {
+      System.out.println("Ingen aktive reservationer fundet. Der skal være mindst én aktiv reservation.");
+      System.out.println("Brug menu-punkt 6 for at oprette en reservation først.");
+      return;
+    }
+
+    // Vis reservationerne med numre
+    for (int i = 0; i < activeReservations.size(); i++) {
+      Reservation res = activeReservations.get(i);
+      System.out.printf("%d: %s | Student: %s | Laptop: %s %s (%s)%n",
+              i + 1,
+              res.getReservationId(),
+              res.getStudent().getName(),
+              res.getLaptop().getBrand(),
+              res.getLaptop().getModel(),
+              res.getLaptop().getPerformanceType());
+    }
+
+    // Vælg hvilken reservation der skal afsluttes
+    System.out.print("Vælg reservation at afslutte (1-" + activeReservations.size() + "): ");
+    int resChoice = scanner.nextInt();
+    scanner.nextLine(); // Fjern newline
+
+    if (resChoice < 1 || resChoice > activeReservations.size()) {
+      System.out.println("Ugyldigt valg.");
+      return;
+    }
+
+    // Hent valgte reservation
+    Reservation selectedReservation = activeReservations.get(resChoice - 1);
+    Laptop laptop = selectedReservation.getLaptop();
+    PerformanceTypeEnum laptopType = laptop.getPerformanceType();
+
+    // Find om der er studerende i køen der matcher denne laptops ydelsestype
+    boolean hasStudentsInQueue = false;
+    if (laptopType == PerformanceTypeEnum.HIGH && highQueueSize > 0) {
+      hasStudentsInQueue = true;
+    } else if (laptopType == PerformanceTypeEnum.LOW && lowQueueSize > 0) {
+      hasStudentsInQueue = true;
+    }
+
+    if (!hasStudentsInQueue) {
+      System.out.println("ADVARSEL: Der er ingen studerende i " + laptopType + " køen.");
+      System.out.println("Du vil ikke se den automatiske reservation-mekanisme i aktion.");
+      System.out.print("Vil du fortsætte alligevel? (ja/nej): ");
+      String confirm = scanner.nextLine();
+      if (!confirm.equalsIgnoreCase("ja")) {
+        System.out.println("Afbrudt.");
+        return;
+      }
+    }
+
+    System.out.println("\nStatus FØR:");
+    System.out.println("- Aktive reservationer: " + activeReservations.size());
+    System.out.println("- Studerende i " + laptopType + " kø: " +
+            (laptopType == PerformanceTypeEnum.HIGH ? highQueueSize : lowQueueSize));
+
+    // Gem UUID og student fra valgte reservation til senere verificering
+    UUID laptopId = laptop.getId();
+
+    // Ændr status på reservationen til COMPLETED via transaktion (frigiver laptop)
+    System.out.println("\nAfslutter reservation " + selectedReservation.getReservationId() + "...");
+    boolean updated = reservationDAO.updateStatusWithTransaction(selectedReservation);
+
+    if (!updated) {
+      System.out.println("Fejl: Kunne ikke afslutte reservationen.");
+      return;
+    }
+
+    // Giv ReservationManager tid til at reagere (observer-mønsteret)
+    System.out.println("Venter på at observer-mønsteret reagerer...");
+    try {
+      Thread.sleep(1000); // Vent 1 sekund
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    // Tjek status EFTER
+    System.out.println("\nStatus EFTER:");
+
+    // Hent opdateret antal aktive reservationer
+    int newActiveReservationCount = 0;
+    for (Reservation res : reservationDAO.getAllReservations()) {
+      if (res.getStatus() == ReservationStatusEnum.ACTIVE) {
+        newActiveReservationCount++;
+      }
+    }
+
+    // Hent opdateret kø-størrelse
+    int newQueueSize = queueDAO.getQueueSize(laptopType);
+
+    System.out.println("- Aktive reservationer: " + newActiveReservationCount);
+    System.out.println("- Studerende i " + laptopType + " kø: " + newQueueSize);
+
+    // Tjek om laptopen nu er tildelt til en ny student
+    Laptop updatedLaptop = laptopDAO.getById(laptopId);
+
+    if (updatedLaptop.isLoaned()) {
+      System.out.println("\nLaptop blev automatisk tildelt til en ny student!");
+
+      // Find den nye reservation
+      Reservation newReservation = null;
+      for (Reservation res : reservationDAO.getAllReservations()) {
+        if (res.getStatus() == ReservationStatusEnum.ACTIVE &&
+                res.getLaptop().getId().equals(laptopId)) {
+          newReservation = res;
+          break;
+        }
+      }
+
+      if (newReservation != null) {
+        System.out.println("Ny reservation oprettet med ID: " + newReservation.getReservationId());
+        System.out.println("Student: " + newReservation.getStudent().getName() +
+                " (VIA ID: " + newReservation.getStudent().getViaId() + ")");
+      } else {
+        System.out.println("ADVARSEL: Laptop er markeret som udlånt, men kunne ikke finde den nye reservation.");
+      }
+    } else {
+      System.out.println("\nLaptop blev ikke automatisk tildelt til en ny student.");
+      if (hasStudentsInQueue) {
+        System.out.println("Dette er uventet, da der var studerende i køen. Observer-mønsteret fungerede ikke korrekt.");
+      } else {
+        System.out.println("Dette er forventet, da der ikke var studerende i " + laptopType + " køen.");
+      }
+    }
+  }
+
 }

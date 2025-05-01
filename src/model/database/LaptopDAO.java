@@ -1,6 +1,7 @@
 package model.database;
 
 import model.enums.PerformanceTypeEnum;
+
 import model.logic.reservationsLogic.ReservationManager;
 import model.models.Laptop;
 import model.models.AvailableState;
@@ -184,10 +185,8 @@ public class LaptopDAO {
         PerformanceTypeEnum performanceType = PerformanceTypeEnum.valueOf(rs.getString("performance_type"));
         ReservationManager manager = new ReservationManager();
 
-
         // Brug konstruktøren der accepterer et UUID for at undgå at generere nyt
         Laptop laptop = new Laptop(laptopId, brand, model, gigabyte, ram, performanceType, manager);
-        Laptop laptop1 =
 
         // Sæt tilstanden baseret på databaseværdien
         String stateName = rs.getString("state");
